@@ -1,0 +1,74 @@
+version: '12'
+
+volumes:
+
+  database_data:
+    name: database_data
+    driver: local #local is a default value (https://docs.docker.com/storage/volumes/#create-a-volume) It means we create a volume on the host machine
+
+    driver_opts:
+      type: none #none is a default value (https://docs.docker.com/storage/volumes/#create-a-volume) It means we create a volume on the host machine
+
+      device: /home/wordpress/database_data #this is a path on the host machine where we want to store our data
+
+      o: bind #It means we want to mount a directory from the host machine into the container. Whatever happens in the container will be reflected on the host machine and vice versa
+
+  wordpress_data:
+    name: wordpress_data
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/wordpress/wordpress_data 
+      o: bind
+
+services:
+  
+  mariadb:
+    image: mariadb
+    restart: always
+    build: ./requirements/mariadb
+    expose:
+       - "3306" #this is a port on the container
+    env_file:
+      - .env
+    networks:
+      - Intra42
+    volumes:
+      - database_data:/var/lib/mysql #this is a default root value for mariadb
+    tty: true
+
+    wordpress:
+      image: wordpress
+      restart: always
+      build: ./requirements/wordpress
+      expose:
+        - "80"
+      env_file:
+        - .env
+      networks:
+        - Intra42
+      volumes:
+        - wordpress_data:/var/www/html #this is a default root value for wordpress
+      tty: true
+      depends_on:
+        - mariadb
+
+      nginx:
+        image: nginx
+        restart: always
+        build: ./requirements/nginx
+        expose:
+          - "80" #this is a port on the container
+        env_file:
+          - .env
+        networks:
+          - Intra42
+        volumes:
+          - wordpress_data:/var/www/html #this is a default root value for wordpress
+        tty: true
+        depends_on:
+          - wordpress
+
+networks:
+  Intra42:
+    driver: bridge #bridge is a default value (https://docs.docker.com/network/bridge/#use-the-default-bridge-network) It means we create a network on the host machine
