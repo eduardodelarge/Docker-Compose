@@ -1,16 +1,13 @@
-version: '12'
+version: "3"
 
 volumes:
 
   database_data:
     name: database_data
     driver: local #local is a default value (https://docs.docker.com/storage/volumes/#create-a-volume) It means we create a volume on the host machine
-
     driver_opts:
       type: none #none is a default value (https://docs.docker.com/storage/volumes/#create-a-volume) It means we create a volume on the host machine
-
       device: /home/wordpress/database_data #this is a path on the host machine where we want to store our data
-
       o: bind #It means we want to mount a directory from the host machine into the container. Whatever happens in the container will be reflected on the host machine and vice versa
 
   wordpress_data:
@@ -58,7 +55,7 @@ services:
         restart: always
         build: ./requirements/nginx
         expose:
-          - "80" #this is a port on the container
+          - "80"
         env_file:
           - .env
         networks:
