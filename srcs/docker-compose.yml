@@ -1,71 +1,74 @@
-version: "3"
+# docker-compose.yml
 
-volumes:
+# Specify the version of Docker Compose to use
+version: '3.8'
 
-  database_data:
-    name: database_data
-    driver: local #local is a default value (https://docs.docker.com/storage/volumes/#create-a-volume) It means we create a volume on the host machine
-    driver_opts:
-      type: none #none is a default value (https://docs.docker.com/storage/volumes/#create-a-volume) It means we create a volume on the host machine
-      device: /home/wordpress/database_data #this is a path on the host machine where we want to store our data
-      o: bind #It means we want to mount a directory from the host machine into the container. Whatever happens in the container will be reflected on the host machine and vice versa
-
-  wordpress_data:
-    name: wordpress_data
-    driver: local
-    driver_opts:
-      type: none
-      device: /home/wordpress/wordpress_data 
-      o: bind
-
-services:
-  
-  mariadb:
-    image: mariadb
-    restart: always
-    build: ./requirements/mariadb
-    expose:
-       - "3306" #this is a port on the container
-    env_file:
-      - .env
-    networks:
-      - Intra42
-    volumes:
-      - database_data:/var/lib/mysql #this is a default root value for mariadb
-    tty: true
-
-    wordpress:
-      image: wordpress
-      restart: always
-      build: ./requirements/wordpress
-      expose:
-        - "80"
-      env_file:
-        - .env
-      networks:
-        - Intra42
-      volumes:
-        - wordpress_data:/var/www/html #this is a default root value for wordpress
-      tty: true
-      depends_on:
-        - mariadb
-
-      nginx:
-        image: nginx
-        restart: always
-        build: ./requirements/nginx
-        expose:
-          - "80"
-        env_file:
-          - .env
-        networks:
-          - Intra42
-        volumes:
-          - wordpress_data:/var/www/html #this is a default root value for wordpress
-        tty: true
-        depends_on:
-          - wordpress
-
+# Define a custom network named 'Netception'
 networks:
-  Intra42:
-    driver: bridge #bridge is a default value (https://docs.docker.com/network/bridge/#use-the-default-bridge-network) It means we create a network on the host machine
+  Netception:
+
+# Define the services that make up your app
+services:
+  # The nginx service
+  nginx:
+    # The name of the container when it is started
+    container_name: nginx
+    # The location of the Dockerfile for this service
+    build: ./requirements/nginx
+    # The name of the image to build
+    image: img_nginx
+    # Mount host paths or named volumes, specified as sub-options to a service
+    volumes:
+      - "~/Desktop/inception/website:/var/www/html"
+    # Connect this service to the 'Netception' network
+    networks:
+      - Netception
+    # Expose ports. Format: host:container
+    ports:
+      - "443:443" 
+    # Express dependency between services
+    depends_on:
+      - wordpress
+    # Restart policy to apply when a container exits
+    restart: always
+
+  # The wordpress service
+  wordpress:
+    container_name: wordpress
+    depends_on:
+      - mariadb
+    build: ./requirements/wordpress
+    volumes:
+      - "~/Desktop/inception/website:/var/www/html"
+    networks:
+      - Netception
+    # Add environment variables
+    environment: 
+      MYSQL_HOST:       ${MYSQL_HOST}
+      WP_DATABASE_NAME: ${WP_DATABASE_NAME}
+      WP_DATABASE_USR:  ${WP_DATABASE_USR}
+      WP_DATABASE_PWD:  ${WP_DATABASE_PWD}
+      DOMAIN_NAME:      ${DOMAIN_NAME}
+      WP_TITLE:         ${WP_TITLE}
+      WP_ADMIN_USR:     ${WP_ADMIN_USR}
+      WP_ADMIN_PWD:     ${WP_ADMIN_PWD}
+      WP_ADMIN_EMAIL:   ${WP_ADMIN_EMAIL}
+      WP_USR:           ${WP_USR}
+      WP_PWD:           ${WP_PWD}
+      WP_EMAIL:         ${WP_EMAIL}
+    restart: always
+
+  # The mariadb service
+  mariadb:
+    container_name: mariadb
+    build: ./requirements/mariadb
+    volumes:
+      - "~/Desktop/inception/mariadb:/var/lib/mysql"
+    networks:
+      - Netception
+    environment:
+      MYSQL_ROOT_PWD:   ${MYSQL_ROOT_PWD}
+      WP_DATABASE_NAME: ${WP_DATABASE_NAME}
+      WP_DATABASE_USR:  ${WP_DATABASE_USR}
+      WP_DATABASE_PWD:  ${WP_DATABASE_PWD}
+    restart: always

@@ -1,25 +1,19 @@
-FROM debian:bullseye
+FROM	alpine:3.17
 
-# Install packages
-RUN apt-get -y update && apt-get -y upgrade && \
-    apt-get -y install wget curl php7.3 php-cli php-fpm php-mysql mariadb-client sendmail && \
-    rm -rf /var/lib/apt/lists/*
+RUN		apk update
+RUN		apk add --no-cache --quiet --update curl bash vim
+RUN		apk add --no-cache --quiet --update mariadb-client
+RUN		apk add --no-cache --quiet --update php7 php-phar \
+			php-json php-curl php-fpm php-mysqli php-iconv
 
-#Curl will download wordpress cli https://github.com/wp-cli/wp-cli
-RUN mkdir -p tools && \
-curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
-chmod +x wp-cli.phar && \
-mv wp-cli.phar /usr/local/bin/wp && \
-wp cli update
+RUN	adduser -S nginx &&	addgroup -S nginx
+COPY conf/www.conf /etc/php7/php-fpm.d/www.conf
 
-COPY ./conf/www.conf /tools/www.conf
-COPY ./conf/php-fpm.conf /tools/php-fpm.conf
-COPY ./tools/create_wordpress.sh /tools/create_wordpress.sh
+RUN wget https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+RUN chmod +x wp-cli.phar
+RUN cp wp-cli.phar /usr/bin/wp
 
-RUN chmod +x /tools/create_wordpress.sh
+WORKDIR /var/www/html/wordpress
 
-WORKDIR /var/www/html
-
-EXPOSE 9000
-
-ENTRYPOINT ["/tools/create_wordpress.sh"]
+COPY tools/configure.sh /tmp/configure.sh
+ENTRYPOINT [ "sh", "/tmp/configure.sh" ]
