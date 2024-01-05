@@ -19,7 +19,7 @@ services:
     image: img_nginx
     # Mount host paths or named volumes, specified as sub-options to a service
     volumes:
-      - "~/Desktop/inception/website:/var/www/html"
+      - "~/Desktop/Inception/website:/var/www/html"
     # Connect this service to the 'Netception' network
     networks:
       - Netception
@@ -39,7 +39,7 @@ services:
       - mariadb
     build: ./requirements/wordpress
     volumes:
-      - "~/Desktop/inception/website:/var/www/html"
+      - "~/Desktop/Inception/website:/var/www/html"
     networks:
       - Netception
     # Add environment variables

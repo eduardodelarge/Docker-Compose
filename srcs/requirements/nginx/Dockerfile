@@ -1,7 +1,6 @@
 # Dockerfile
 
-# Use the alpine:3.17 image as the base
-FROM alpine:3.17
+FROM alpine:3.18
 
 # Update the package list, upgrade all packages, and install nginx and openssl
 RUN	apk update && apk upgrade && apk add --no-cache \
@@ -14,7 +13,8 @@ RUN mkdir /etc/nginx/ssl
 RUN openssl req -newkey rsa:4096 -x509 -sha256 -days 365 -nodes \
         -out /etc/nginx/ssl/caeduard.pem \
         -keyout /etc/nginx/ssl/caeduard.key \
-        -subj "/C=BR/ST=SAOPAULO/L=SAOPAULO/O=42 School/OU=caeduard/CN=caeduard/"
+        -subj "/C=BR/ST=MG/O=42/CN=localhost/"
+        
 
 # Create a directory for nginx to store its PID file
 RUN mkdir -p /run/nginx
