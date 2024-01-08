@@ -1,0 +1,18 @@
+all : up
+
+up : 
+	mkdir -p /home/$(USER)/Desktop/Inception/srcs/wordpress
+	mkdir -p /home/$(USER)/Desktop/Inception/srcs/mariadb
+	@docker-compose -f ./srcs/docker-compose.yml up -d
+
+down : 
+	@docker-compose -f ./srcs/docker-compose.yml down
+
+stop : 
+	@docker-compose -f ./srcs/docker-compose.yml stop
+
+start : 
+	@docker-compose -f ./srcs/docker-compose.yml start
+
+status : 
+	@docker ps
