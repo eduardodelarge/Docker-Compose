@@ -1,8 +1,7 @@
 all : up
 
 up : 
-	mkdir -p /home/$(USER)/Desktop/Inception/srcs/wordpress
-	mkdir -p /home/$(USER)/Desktop/Inception/srcs/mariadb
+	mkdir -p /Users/login/data/wordpress
 	@docker-compose -f ./srcs/docker-compose.yml up -d
 
 down : 
