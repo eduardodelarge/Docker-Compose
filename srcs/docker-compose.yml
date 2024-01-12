@@ -1,74 +1,62 @@
-# docker-compose.yml
+version: "3.8"
 
-# Specify the version of Docker Compose to use
-version: '3.8'
+volumes:
+        wordpress:
+                name: wordpress
+                driver: local
+                driver_opts:
+                        device: '/Users/login/data/wordpress'
+                        o: bind
+                        type: none
+        mariadb:
+                name: mariadb
+                driver: local
+                driver_opts:
+                        device: '/Users/login/data/mariadb'
+                        o: bind
+                        type: none
 
-# Define a custom network named 'Netception'
 networks:
-  Netception:
+  inception:
+    name: inception
 
-# Define the services that make up your app
 services:
-  # The nginx service
   nginx:
-    # The name of the container when it is started
     container_name: nginx
-    # The location of the Dockerfile for this service
-    build: ./requirements/nginx
-    # The name of the image to build
-    image: img_nginx
-    # Mount host paths or named volumes, specified as sub-options to a service
-    volumes:
-      - "~/Desktop/Inception/website:/var/www/html"
-    # Connect this service to the 'Netception' network
-    networks:
-      - Netception
-    # Expose ports. Format: host:container
+    build: ./srcs/requeriments/nginx
+    image: nginx
     ports:
-      - "443:443" 
-    # Express dependency between services
+     - "443:443"
     depends_on:
       - wordpress
-    # Restart policy to apply when a container exits
+    volumes:
+     - wordpress:/var/www/html
+    networks:
+      - inception
+    env_file:
+      - .env
     restart: always
-
-  # The wordpress service
   wordpress:
     container_name: wordpress
+    build: ./srcs/requeriments/wordpress
+    image: wordpress
     depends_on:
       - mariadb
-    build: ./requirements/wordpress
     volumes:
-      - "~/Desktop/Inception/website:/var/www/html"
+      - wordpress:/var/www/html
+    env_file:
+      - .env
     networks:
-      - Netception
-    # Add environment variables
-    environment: 
-      MYSQL_HOST:       ${MYSQL_HOST}
-      WP_DATABASE_NAME: ${WP_DATABASE_NAME}
-      WP_DATABASE_USR:  ${WP_DATABASE_USR}
-      WP_DATABASE_PWD:  ${WP_DATABASE_PWD}
-      DOMAIN_NAME:      ${DOMAIN_NAME}
-      WP_TITLE:         ${WP_TITLE}
-      WP_ADMIN_USR:     ${WP_ADMIN_USR}
-      WP_ADMIN_PWD:     ${WP_ADMIN_PWD}
-      WP_ADMIN_EMAIL:   ${WP_ADMIN_EMAIL}
-      WP_USR:           ${WP_USR}
-      WP_PWD:           ${WP_PWD}
-      WP_EMAIL:         ${WP_EMAIL}
+      - inception
     restart: always
-
-  # The mariadb service
   mariadb:
     container_name: mariadb
-    build: ./requirements/mariadb
+    build: ./srcs/requeriments/mariadb
+    image: mariadb
     volumes:
-      - "~/Desktop/inception/mariadb:/var/lib/mysql"
+      - mariadb:/var/lib/mysql
+    env_file:
+      - .env
     networks:
-      - Netception
-    environment:
-      MYSQL_ROOT_PWD:   ${MYSQL_ROOT_PWD}
-      WP_DATABASE_NAME: ${WP_DATABASE_NAME}
-      WP_DATABASE_USR:  ${WP_DATABASE_USR}
-      WP_DATABASE_PWD:  ${WP_DATABASE_PWD}
+      - inception
     restart: always
